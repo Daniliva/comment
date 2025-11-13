@@ -8,26 +8,26 @@
 
 /* Comment Form Styles */
 .comment-form {
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--bs-border-color);
   border-radius: 0.5rem;
 }
 
 .comment-form.compact {
   border: none;
-  box-shadow: 0 0 0 1px #e9ecef;
+  box-shadow: 0 0 0 1px var(--bs-border-color);
 }
 
 .comment-form.reply-form {
-  background-color: #f8f9fa;
+  background-color: var(--bs-secondary-bg-subtle);
 }
 
 .preview-section {
-  background-color: #f8f9fa;
-  border-left: 4px solid #007bff;
+  background-color: var(--bs-secondary-bg);
+  border-left: 4px solid var(--bs-primary);
 }
 
 .preview-content {
-  background: white;
+  background: var(--bs-body-bg);
   padding: 1rem;
   border-radius: 0.25rem;
 }
@@ -43,7 +43,7 @@
 }
 
 .comment-item:hover {
-  background-color: #f8f9fa;
+  background-color: var(--bs-secondary-bg);
 }
 
 .comment-reply {
@@ -58,12 +58,12 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background-color: #e9ecef;
+  background-color: var(--bs-border-color);
 }
 
 .comment-card {
   border: none;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--bs-border-color);
   border-radius: 0;
   margin-bottom: 0;
 }
@@ -77,7 +77,7 @@
 }
 
 .comment-username {
-  color: #495057;
+  color: var(--bs-body-color);
   font-size: 1rem;
 }
 
@@ -91,7 +91,7 @@
 }
 
 .comment-text a {
-  color: #007bff;
+  color: var(--bs-link-color);
   text-decoration: none;
 }
 
@@ -100,7 +100,7 @@
 }
 
 .comment-text code {
-  background-color: #f8f9fa;
+  background-color: var(--bs-secondary-bg);
   padding: 0.2rem 0.4rem;
   border-radius: 0.25rem;
   font-size: 0.875em;
@@ -116,30 +116,30 @@
 }
 
 .comment-actions {
-  border-top: 1px solid #f8f9fa;
+  border-top: 1px solid var(--bs-secondary-bg);
   padding-top: 1rem;
 }
 
 /* File Upload Styles */
 .file-upload .file-input {
-  border: 2px dashed #dee2e6;
+  border: 2px dashed var(--bs-border-color);
   padding: 1rem;
   transition: border-color 0.15s ease-in-out;
 }
 
 .file-upload .file-input:hover {
-  border-color: #007bff;
+  border-color: var(--bs-primary);
 }
 
 .file-info {
-  background-color: #f8f9fa;
+  background-color: var(--bs-secondary-bg);
 }
 
 /* CAPTCHA Styles */
 .captcha-container .captcha-image {
   max-width: 100%;
   height: auto;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--bs-border-color);
   border-radius: 0.25rem;
 }
 
@@ -155,7 +155,7 @@
   .comment-reply {
     margin-left: 1rem;
   }
-  
+
   .app-container {
     padding: 0 1rem;
   }

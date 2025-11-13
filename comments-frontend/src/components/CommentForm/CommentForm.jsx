@@ -1,4 +1,3 @@
-// File: src/components/CommentForm/CommentForm.jsx
 import React, { useState, useRef } from 'react';
 import {
   Form,
@@ -21,6 +20,8 @@ const CommentForm = ({ onCommentAdded, parentId = null, compact = false }) => {
   const [preview, setPreview] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [showForm, setShowForm] = useState(true); // Новое состояние для показа формы
+  const [successMessage, setSuccessMessage] = useState(false); // Для сообщения об успехе
   const fileInputRef = useRef(null);
 
   const validationSchema = Yup.object({
@@ -74,32 +75,22 @@ const CommentForm = ({ onCommentAdded, parentId = null, compact = false }) => {
             formData.append(capitalKey, value);
           }
         });
-        formData.append('CaptchaId', captcha.id);
 
         const response = await commentService.createComment(formData);
 
         if (response.success) {
-          onCommentAdded(response.data);
           resetForm();
+          if (fileInputRef.current) fileInputRef.current.value = '';
           setCaptcha({ id: '', image: '' });
           setPreview(false);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-          }
+          onCommentAdded(response.data);
+          setShowForm(false); // Скрываем форму после успеха
+          setSuccessMessage(true); // Показываем сообщение об успехе
         } else {
-          setSubmitError(response.message || 'Error submitting comment');
+          setSubmitError(response.message || 'Failed to submit comment');
         }
-      } catch (error) {
-        console.error('Submit error:', error);
-        setSubmitError(error.response?.data?.message || error.message || 'Error submitting comment');
-
-        if (error.response?.data?.errors) {
-          const serverErrors = {};
-          Object.entries(error.response.data.errors).forEach(([key, msgs]) => {
-            serverErrors[key.toLowerCase()] = msgs.join(', ');
-          });
-          setErrors(serverErrors);
-        }
+      } catch (err) {
+        setSubmitError(err.message || 'Error submitting comment');
       } finally {
         setSubmitLoading(false);
       }
@@ -110,79 +101,81 @@ const CommentForm = ({ onCommentAdded, parentId = null, compact = false }) => {
     formik.setFieldValue('file', file);
   };
 
-  const handleTextFormat = (tag) => {
-    const textarea = document.querySelector('textarea[name="text"]');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = formik.values.text.substring(start, end);
-
-    let newText = formik.values.text;
-    if (tag === 'a') {
-      const url = prompt('Enter link URL:');
-      if (url) newText = newText.slice(0, start) + `<a href="${url}">${selectedText || 'link'}</a>` + newText.slice(end);
-    } else {
-      newText = newText.slice(0, start) + `<${tag}>${selectedText}</${tag}>` + newText.slice(end);
-    }
-    formik.setFieldValue('text', newText);
-  };
+  if (!showForm) {
+    return (
+        <Alert variant="success" className="mt-3">
+          Comment added successfully!
+          <Button
+              variant="link"
+              onClick={() => {
+                setShowForm(true);
+                setSuccessMessage(false);
+              }}
+              className="ms-2 p-0"
+          >
+            Add another
+          </Button>
+        </Alert>
+    );
+  }
 
   return (
-      <Card className={`comment-form ${compact ? 'compact' : ''}`}>
-        <Card.Header>
-          <h5 className="mb-0">{compact ? 'Reply to Comment' : 'Add New Comment'}</h5>
-        </Card.Header>
+      <Card className={`comment-form ${compact ? 'compact' : ''} ${parentId ? 'reply-form' : ''}`}>
         <Card.Body>
           <Form onSubmit={formik.handleSubmit}>
+            {!compact && <Card.Title>Add Comment</Card.Title>}
+
             <Row>
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Username *</Form.Label>
                   <Form.Control
+                      type="text"
                       name="userName"
-                      placeholder="Enter your username"
                       value={formik.values.userName}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                       isInvalid={formik.touched.userName && formik.errors.userName}
                       disabled={submitLoading}
-                      maxLength={50}
+                      placeholder="Enter username"
                   />
                   <Form.Control.Feedback type="invalid">
                     {formik.errors.userName}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Email *</Form.Label>
                   <Form.Control
                       type="email"
                       name="email"
-                      placeholder="Enter your email"
                       value={formik.values.email}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                       isInvalid={formik.touched.email && formik.errors.email}
                       disabled={submitLoading}
-                      maxLength={100}
+                      placeholder="Enter email"
                   />
                   <Form.Control.Feedback type="invalid">
                     {formik.errors.email}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Home Page</Form.Label>
                   <Form.Control
+                      type="url"
                       name="homePage"
-                      placeholder="Enter your website URL"
                       value={formik.values.homePage}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                       isInvalid={formik.touched.homePage && formik.errors.homePage}
                       disabled={submitLoading}
-                      maxLength={500}
+                      placeholder="https://example.com"
                   />
                   <Form.Control.Feedback type="invalid">
                     {formik.errors.homePage}
@@ -193,55 +186,17 @@ const CommentForm = ({ onCommentAdded, parentId = null, compact = false }) => {
 
             <Form.Group className="mb-3">
               <Form.Label>Comment Text *</Form.Label>
-              <ButtonGroup className="mb-2">
-                <Button
-                    variant="outline-secondary"
-                    type="button"
-                    onClick={() => handleTextFormat('a')}
-                    title="Link"
-                >
-                  🔗
-                </Button>
-                <Button
-                    variant="outline-secondary"
-                    type="button"
-                    onClick={() => handleTextFormat('code')}
-                    title="Code"
-                >
-                  &lt;/&gt;
-                </Button>
-                <Button
-                    variant="outline-secondary"
-                    type="button"
-                    onClick={() => handleTextFormat('strong')}
-                    title="Bold"
-                >
-                  <strong>B</strong>
-                </Button>
-                <Button
-                    variant="outline-secondary"
-                    type="button"
-                    onClick={() => handleTextFormat('i')}
-                    title="Italic"
-                >
-                  <i>I</i>
-                </Button>
-              </ButtonGroup>
-
               <Form.Control
                   as="textarea"
-                  rows={compact ? 3 : 4}
+                  rows={compact ? 2 : 4}
                   name="text"
-                  placeholder="Enter your comment..."
                   value={formik.values.text}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   isInvalid={formik.touched.text && formik.errors.text}
                   disabled={submitLoading}
+                  placeholder="Enter your comment here. Supports basic HTML: <a>, <code>, <i>, <strong>."
               />
-              <Form.Text className="text-muted">
-                Supported HTML tags: &lt;a href=""&gt;, &lt;code&gt;, &lt;i&gt;, &lt;strong&gt;
-              </Form.Text>
               <Form.Control.Feedback type="invalid">
                 {formik.errors.text}
               </Form.Control.Feedback>

@@ -1,4 +1,3 @@
-// File: src/components/CommentRow/CommentRow.jsx
 import React, { useState } from 'react';
 import { Button, Collapse } from 'react-bootstrap';
 import Lightbox from 'react-image-lightbox';
@@ -23,6 +22,11 @@ const CommentRow = ({ comment, onCommentAdded, onCommentDeleted, level = 0 }) =>
                 alert('Error deleting comment: ' + (err.message || 'Cannot delete if has replies'));
             }
         }
+    };
+
+    const handleReplySubmit = (newComment) => {
+        setShowReplyForm(false);
+        onCommentAdded(newComment);
     };
 
     const formatDate = (dateString) => {
@@ -72,7 +76,7 @@ const CommentRow = ({ comment, onCommentAdded, onCommentDeleted, level = 0 }) =>
                             size="sm"
                             onClick={(e) => { e.stopPropagation(); setShowReplyForm(!showReplyForm); }}
                         >
-                            Reply
+                            {showReplyForm ? 'Cancel Reply' : 'Reply'}
                         </Button>
                     )}
                     <Button
@@ -87,11 +91,11 @@ const CommentRow = ({ comment, onCommentAdded, onCommentDeleted, level = 0 }) =>
             </tr>
             <tr className="hide-table-padding">
                 <td colSpan={5}>
-                    <Collapse in={isExpanded}>
+                    <Collapse in={isExpanded || showReplyForm}>
                         <div className="p-3">
                             {showReplyForm && level < 5 && (
                                 <CommentForm
-                                    onCommentAdded={onCommentAdded}
+                                    onCommentAdded={handleReplySubmit}
                                     parentId={comment.id}
                                     compact={true}
                                 />
