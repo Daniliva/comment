@@ -1,0 +1,191 @@
+/* Global Styles */
+.app-container {
+  min-height: 100vh;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Comment Form Styles */
+.comment-form {
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+}
+
+.comment-form.compact {
+  border: none;
+  box-shadow: 0 0 0 1px #e9ecef;
+}
+
+.comment-form.reply-form {
+  background-color: #f8f9fa;
+}
+
+.preview-section {
+  background-color: #f8f9fa;
+  border-left: 4px solid #007bff;
+}
+
+.preview-content {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.25rem;
+}
+
+/* Comment List Styles */
+.comment-list .card-body {
+  padding: 0;
+}
+
+/* Comment Item Styles */
+.comment-item {
+  transition: all 0.2s ease;
+}
+
+.comment-item:hover {
+  background-color: #f8f9fa;
+}
+
+.comment-reply {
+  margin-left: 2rem;
+  position: relative;
+}
+
+.comment-reply::before {
+  content: '';
+  position: absolute;
+  left: -1rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #e9ecef;
+}
+
+.comment-card {
+  border: none;
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
+.comment-card:last-child {
+  border-bottom: none;
+}
+
+.comment-header {
+  flex: 1;
+}
+
+.comment-username {
+  color: #495057;
+  font-size: 1rem;
+}
+
+.comment-meta {
+  font-size: 0.875rem;
+}
+
+.comment-text {
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.comment-text a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.comment-text a:hover {
+  text-decoration: underline;
+}
+
+.comment-text code {
+  background-color: #f8f9fa;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  color: #e83e8c;
+}
+
+.comment-text strong {
+  font-weight: 600;
+}
+
+.comment-text i {
+  font-style: italic;
+}
+
+.comment-actions {
+  border-top: 1px solid #f8f9fa;
+  padding-top: 1rem;
+}
+
+/* File Upload Styles */
+.file-upload .file-input {
+  border: 2px dashed #dee2e6;
+  padding: 1rem;
+  transition: border-color 0.15s ease-in-out;
+}
+
+.file-upload .file-input:hover {
+  border-color: #007bff;
+}
+
+.file-info {
+  background-color: #f8f9fa;
+}
+
+/* CAPTCHA Styles */
+.captcha-container .captcha-image {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+}
+
+.captcha-image-container {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .comment-reply {
+    margin-left: 1rem;
+  }
+  
+  .app-container {
+    padding: 0 1rem;
+  }
+}
+
+/* Animation for new comments */
+@keyframes highlight {
+  0% {
+    background-color: #d4edda;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.comment-item.highlight {
+  animation: highlight 2s ease;
+}
+
+/* Loading states */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Utility classes */
+.text-decoration-none {
+  text-decoration: none;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

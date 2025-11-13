@@ -1,12 +1,12 @@
-﻿using Comments.Application;
+﻿using Comments.API.Controllers;
+using Comments.Core.Entities;
 using Comments.Core.Exceptions;
 using Comments.Core.Interfaces;
 using Comments.Core.Specifications;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-// Добавлено
+using Path = System.IO.Path;
 
-// Добавлено
 namespace Comments.API.Service
 {
     public class FileService : IFileService
@@ -17,8 +17,8 @@ namespace Comments.API.Service
 
         private const int MaxImageWidth = 320;
         private const int MaxImageHeight = 240;
-        private const long MaxTextFileSize = 100 * 1024; // 100KB
-        private const long MaxImageFileSize = 5 * 1024 * 1024; // 5MB
+        private const long MaxTextFileSize = 100 * 1024;
+        private const long MaxImageFileSize = 5 * 1024 * 1024;
 
         public FileService(IWebHostEnvironment environment, IConfiguration configuration, ILogger<FileService> logger)
         {

@@ -9,11 +9,14 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.1.0" />
     <PackageReference Include="FluentValidation" Version="12.1.0" />
+    <PackageReference Include="MassTransit" Version="8.5.5" />
+    <PackageReference Include="MassTransit.Abstractions" Version="8.5.5" />
     <PackageReference Include="MediatR" Version="13.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Comments.Core\Comments.Core.csproj" />
+    <ProjectReference Include="..\Comments.Infrastructure\Comments.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

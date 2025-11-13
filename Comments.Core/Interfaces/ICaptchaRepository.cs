@@ -1,9 +1,10 @@
-﻿using Comments.Application;
+﻿using Comments.Core.Entities;
 
-namespace Comments.Core.Interfaces;
-
-public interface ICaptchaRepository : IRepository<Captcha>
+namespace Comments.Core.Interfaces
 {
-    Task<Captcha?> GetUnusedCaptchaAsync(string code);
-    Task CleanupExpiredCaptchasAsync();
+    public interface ICaptchaRepository : IRepository<Captcha>
+    {
+        Task<Captcha?> GetUnusedCaptchaAsync(string code);
+        Task CleanupExpiredCaptchasAsync();
+    }
 }

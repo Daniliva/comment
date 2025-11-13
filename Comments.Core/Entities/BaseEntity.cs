@@ -1,6 +1,7 @@
-﻿namespace Comments.Application;
-
-public abstract class BaseEntity
+﻿namespace Comments.Core.Entities
 {
-    public int Id { get; set; }
+    public abstract class BaseEntity
+    {
+        public int Id { get; set; }
+    }
 }

@@ -1,7 +1,8 @@
-﻿namespace Comments.Core.Interfaces;
-
-public interface IHtmlSanitizerService
+﻿namespace Comments.Core.Interfaces
 {
-    string Sanitize(string html);
-    bool IsValidHtml(string html);
+    public interface IHtmlSanitizerService
+    {
+        string Sanitize(string html);
+        bool IsValidHtml(string html);
+    }
 }

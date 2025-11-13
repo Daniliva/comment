@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Reflection.Emit;
-using System.Xml.Linq;
-using Comments.Application;
+﻿using Comments.Core.Entities;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace Comments.Infrastructure.Data
 {

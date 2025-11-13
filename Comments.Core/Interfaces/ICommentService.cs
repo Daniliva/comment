@@ -1,10 +1,5 @@
 ﻿using Comments.Core.DTOs.Requests;
 using Comments.Core.DTOs.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Comments.Core.Interfaces
 {

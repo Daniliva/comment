@@ -1,0 +1,25 @@
+.captcha-container {
+    margin-bottom: 1rem;
+}
+
+.captcha-image-container {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+}
+
+.captcha-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.25rem;
+}
+
+.captcha-image:hover {
+    opacity: 0.8;
+    cursor: pointer;
+}

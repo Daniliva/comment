@@ -1,17 +1,19 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic.FileIO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Text.Json;
+using AutoMapper;
 using Comments.Core.DTOs.Requests;
 using Comments.Core.DTOs.Responses;
+using Comments.Core.Entities;
 using Comments.Core.Exceptions;
 using Comments.Core.Interfaces;
 using Comments.Core.Specifications;
+using Comments.Infrastructure.Data;
+using Comments.Infrastructure.Services;
+using MassTransit;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
+using Nest;
+using CommentCreatedEvent = Comments.API.CommentCreatedEvent;
 
 namespace Comments.Application.Services
 {
@@ -24,6 +26,11 @@ namespace Comments.Application.Services
         private readonly IHtmlSanitizerService _htmlSanitizer;
         private readonly IMapper _mapper;
         private readonly ILogger<CommentService> _logger;
+        private readonly CustomWebSocketManager _wsManager;
+        private readonly IElasticClient _elasticClient;
+        private readonly IHubContext<CommentHub> _hubContext;
+        private readonly IDistributedCache _cache; 
+        private readonly IPublishEndpoint _publishEndpoint; 
 
         public CommentService(
             ICommentRepository commentRepository,
@@ -32,7 +39,12 @@ namespace Comments.Application.Services
             IFileService fileService,
             IHtmlSanitizerService htmlSanitizer,
             IMapper mapper,
-            ILogger<CommentService> logger)
+            ILogger<CommentService> logger,
+            CustomWebSocketManager wsManager,
+            IElasticClient elasticClient,
+            IHubContext<CommentHub> hubContext,
+            IDistributedCache cache, 
+            IPublishEndpoint publishEndpoint) 
         {
             _commentRepository = commentRepository;
             _userRepository = userRepository;
@@ -41,6 +53,11 @@ namespace Comments.Application.Services
             _htmlSanitizer = htmlSanitizer;
             _mapper = mapper;
             _logger = logger;
+            _wsManager = wsManager;
+            _elasticClient = elasticClient;
+            _hubContext = hubContext;
+            _cache = cache;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<PagedResponse<CommentResponse>> GetCommentsAsync(GetCommentsRequest request)
@@ -55,25 +72,39 @@ namespace Comments.Application.Services
             };
 
             var pagedComments = await _commentRepository.GetCommentsAsync(specification);
-            return _mapper.Map<PagedResponse<CommentResponse>>(pagedComments);
+            var response = _mapper.Map<PagedResponse<CommentResponse>>(pagedComments);
+
+            return response;
         }
 
         public async Task<CommentResponse?> GetCommentAsync(int id)
         {
+            var cacheKey = $"comment_{id}";
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                return JsonSerializer.Deserialize<CommentResponse>(cachedData);
+            }
+
             var comment = await _commentRepository.GetCommentWithRepliesAsync(id);
-            return comment != null ? _mapper.Map<CommentResponse>(comment) : null;
+            if (comment == null) return null;
+
+            var response = _mapper.Map<CommentResponse>(comment);
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(response), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            });
+
+            return response;
         }
 
         public async Task<CommentResponse> CreateCommentAsync(CreateCommentRequest request, string ipAddress, string userAgent)
         {
-            // Validate CAPTCHA
             var isCaptchaValid = await _captchaService.ValidateCaptchaAsync(request.CaptchaId, request.CaptchaCode);
             if (!isCaptchaValid)
             {
-                throw new ValidationException("Invalid CAPTCHA");
+                throw new ValidationException("Invalid CAPTCHA"+ request.CaptchaId+" "+ request.CaptchaCode);
             }
-
-            // Get or create user
             var user = await _userRepository.GetOrCreateUserAsync(
                 request.UserName,
                 request.Email,
@@ -81,10 +112,8 @@ namespace Comments.Application.Services
                 ipAddress,
                 userAgent);
 
-            // Sanitize HTML
             var sanitizedHtml = _htmlSanitizer.Sanitize(request.Text);
 
-            // Handle file upload
             string? filePath = null;
             string? fileName = null;
             string? fileExtension = null;
@@ -103,7 +132,7 @@ namespace Comments.Application.Services
                 thumbnailPath = fileResult.ThumbnailPath;
             }
 
-            // Validate parent comment exists if ParentId is provided
+
             if (request.ParentId.HasValue)
             {
                 var parentExists = await _commentRepository.ExistsAsync(c => c.Id == request.ParentId.Value);
@@ -113,7 +142,6 @@ namespace Comments.Application.Services
                 }
             }
 
-            // Create comment
             var comment = new Comment
             {
                 UserId = user.Id,
@@ -131,18 +159,36 @@ namespace Comments.Application.Services
             await _commentRepository.AddAsync(comment);
             await _commentRepository.SaveChangesAsync();
 
-            // Mark CAPTCHA as used
             await _captchaService.MarkAsUsedAsync(request.CaptchaId);
 
             _logger.LogInformation("Comment created with ID {CommentId} by user {UserName}", comment.Id, user.UserName);
 
             var response = _mapper.Map<CommentResponse>(comment);
+            
+            await _publishEndpoint.Publish(new CommentCreatedEvent { CommentId = response.Id, UserName = response.UserName });
+            
+            await _hubContext.Clients.All.SendAsync("NewComment", response);
+            await _wsManager.BroadcastAsync(new { Type = "NewComment", Data = response });
+
             if (response.File != null && thumbnailPath != null)
             {
                 response.File.ThumbnailPath = thumbnailPath;
             }
-
+            
+            await _cache.RemoveAsync($"comment_{response.Id}");
+       
             return response;
+        }
+        public async Task<List<CommentResponse>> SearchCommentsAsync(string query)
+        {
+            var response = await _elasticClient.SearchAsync<CommentResponse>(s => s
+                .Query(q => q.MultiMatch(m => m
+                    .Fields(f => f.Fields("text", "userName", "email"))
+                    .Query(query)
+                ))
+                .Size(25)
+            );
+            return response.Documents.ToList();
         }
 
         public async Task<bool> DeleteCommentAsync(int id)
@@ -166,6 +212,12 @@ namespace Comments.Application.Services
 
             _commentRepository.Remove(comment);
             await _commentRepository.SaveChangesAsync();
+                await _cache.RemoveAsync($"comment_{id}");
+            await _cache.RefreshAsync($"comment_{id}");
+              await _hubContext.Clients.All.SendAsync("DeletedComment", id);
+            await _wsManager.BroadcastAsync(new { Type = "DeletedComment", Id = id });
+            
+        
 
             _logger.LogInformation("Comment with ID {CommentId} deleted", id);
             return true;

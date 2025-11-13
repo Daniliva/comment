@@ -1,4 +1,4 @@
-﻿using Comments.Application;
+﻿using Comments.Core.Entities;
 
 namespace Comments.Core.Specifications
 {

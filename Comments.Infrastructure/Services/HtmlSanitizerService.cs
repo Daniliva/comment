@@ -1,50 +1,51 @@
 ﻿using Comments.Core.Interfaces;
 using Ganss.Xss;
 
-namespace Comments.Infrastructure.Services;
-
-public class HtmlSanitizerService : IHtmlSanitizerService
+namespace Comments.Infrastructure.Services
 {
-    private readonly HtmlSanitizer _sanitizer;
-
-    public HtmlSanitizerService()
+    public class HtmlSanitizerService : IHtmlSanitizerService
     {
-        _sanitizer = new HtmlSanitizer();
+        private readonly HtmlSanitizer _sanitizer;
 
-        _sanitizer.AllowedTags.Clear();
-        _sanitizer.AllowedTags.Add("a");
-        _sanitizer.AllowedTags.Add("code");
-        _sanitizer.AllowedTags.Add("i");
-        _sanitizer.AllowedTags.Add("strong");
+        public HtmlSanitizerService()
+        {
+            _sanitizer = new HtmlSanitizer();
 
-        _sanitizer.AllowedAttributes.Clear();
-        _sanitizer.AllowedAttributes.Add("href");
-        _sanitizer.AllowedAttributes.Add("title");
+            _sanitizer.AllowedTags.Clear();
+            _sanitizer.AllowedTags.Add("a");
+            _sanitizer.AllowedTags.Add("code");
+            _sanitizer.AllowedTags.Add("i");
+            _sanitizer.AllowedTags.Add("strong");
 
-        _sanitizer.AllowedSchemes.Clear();
-        _sanitizer.AllowedSchemes.Add("http");
-        _sanitizer.AllowedSchemes.Add("https");
-        _sanitizer.AllowedSchemes.Add("mailto");
+            _sanitizer.AllowedAttributes.Clear();
+            _sanitizer.AllowedAttributes.Add("href");
+            _sanitizer.AllowedAttributes.Add("title");
 
-        _sanitizer.AllowedCssProperties.Clear();
+            _sanitizer.AllowedSchemes.Clear();
+            _sanitizer.AllowedSchemes.Add("http");
+            _sanitizer.AllowedSchemes.Add("https");
+            _sanitizer.AllowedSchemes.Add("mailto");
 
-        _sanitizer.KeepChildNodes = true;
-    }
+            _sanitizer.AllowedCssProperties.Clear();
 
-    public string Sanitize(string html)
-    {
-        if (string.IsNullOrEmpty(html))
-            return html;
+            _sanitizer.KeepChildNodes = true;
+        }
 
-        return _sanitizer.Sanitize(html);
-    }
+        public string Sanitize(string html)
+        {
+            if (string.IsNullOrEmpty(html))
+                return html;
 
-    public bool IsValidHtml(string html)
-    {
-        if (string.IsNullOrEmpty(html))
-            return true;
+            return _sanitizer.Sanitize(html);
+        }
 
-        var sanitized = Sanitize(html);
-        return sanitized == html;
+        public bool IsValidHtml(string html)
+        {
+            if (string.IsNullOrEmpty(html))
+                return true;
+
+            var sanitized = Sanitize(html);
+            return sanitized == html;
+        }
     }
 }

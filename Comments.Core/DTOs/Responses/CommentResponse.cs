@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Nest;
 
 namespace Comments.Core.DTOs.Responses
 {
+    [ElasticsearchType(IdProperty = nameof(Id))]
     public class CommentResponse
     {
         public int Id { get; set; }

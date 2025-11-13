@@ -1,7 +1,8 @@
-﻿namespace Comments.Application;
-
-public enum FileType
+﻿namespace Comments.Core.Entities
 {
-    Image = 1,
-    Text = 2
+    public enum FileType
+    {
+        Image = 1,
+        Text = 2
+    }
 }

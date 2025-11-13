@@ -3,55 +3,56 @@ using Comments.Core.DTOs.Responses;
 using Comments.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Comments.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-[Produces("application/json")]
-public class CaptchaController : ControllerBase
+namespace Comments.API.Controllers
 {
-    private readonly ICaptchaService _captchaService;
-    private readonly ILogger<CaptchaController> _logger;
-
-    public CaptchaController(ICaptchaService captchaService, ILogger<CaptchaController> logger)
+    [ApiController]
+    [Route("api/[controller]")]
+    [Produces("application/json")]
+    public class CaptchaController : ControllerBase
     {
-        _captchaService = captchaService;
-        _logger = logger;
-    }
+        private readonly ICaptchaService _captchaService;
+        private readonly ILogger<CaptchaController> _logger;
 
-    [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<CaptchaResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GenerateCaptcha()
-    {
-        try
+        public CaptchaController(ICaptchaService captchaService, ILogger<CaptchaController> logger)
         {
-            var captcha = await _captchaService.GenerateCaptchaAsync();
-            return Ok(ApiResponse<CaptchaResponse>.SuccessResponse(captcha));
+            _captchaService = captchaService;
+            _logger = logger;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error generating CAPTCHA");
-            return StatusCode(500, ApiResponse<object>.ErrorResponse(
-                "An error occurred while generating CAPTCHA"
-            ));
-        }
-    }
 
-    [HttpPost("validate")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> ValidateCaptcha([FromBody] ValidateCaptchaRequest request)
-    {
-        try
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<CaptchaResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GenerateCaptcha()
         {
-            var isValid = await _captchaService.ValidateCaptchaAsync(request.CaptchaId, request.Code);
-            return Ok(ApiResponse<bool>.SuccessResponse(isValid));
+            try
+            {
+                var captcha = await _captchaService.GenerateCaptchaAsync();
+                return Ok(ApiResponse<CaptchaResponse>.SuccessResponse(captcha));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating CAPTCHA");
+                return StatusCode(500, ApiResponse<object>.ErrorResponse(
+                    "An error occurred while generating CAPTCHA"
+                ));
+            }
         }
-        catch (Exception ex)
+
+        [HttpPost("validate")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ValidateCaptcha([FromBody] ValidateCaptchaRequest request)
         {
-            _logger.LogError(ex, "Error validating CAPTCHA");
-            return StatusCode(500, ApiResponse<object>.ErrorResponse(
-                "An error occurred while validating CAPTCHA"
-            ));
+            try
+            {
+                var isValid = await _captchaService.ValidateCaptchaAsync(request.CaptchaId, request.Code);
+                return Ok(ApiResponse<bool>.SuccessResponse(isValid));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating CAPTCHA");
+                return StatusCode(500, ApiResponse<object>.ErrorResponse(
+                    "An error occurred while validating CAPTCHA"
+                ));
+            }
         }
     }
 }

@@ -2,8 +2,10 @@ using Comments.Core.DTOs.Requests;
 using Comments.Core.DTOs.Responses;
 using Comments.Core.Exceptions;
 using Comments.Core.Interfaces;
+using Comments.Infrastructure.Data;
 using Comments.Infrastructure.Validators;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Comments.API.Controllers
 {
@@ -16,17 +18,19 @@ namespace Comments.API.Controllers
         private readonly ILogger<CommentsController> _logger;
         private readonly CreateCommentRequestValidator _createCommentValidator;
         private readonly GetCommentsRequestValidator _getCommentsValidator;
+        private readonly IHubContext<CommentHub> _hubContext;
 
         public CommentsController(
             ICommentService commentService,
             ILogger<CommentsController> logger,
             CreateCommentRequestValidator createCommentValidator,
-            GetCommentsRequestValidator getCommentsValidator)
+            GetCommentsRequestValidator getCommentsValidator, IHubContext<CommentHub> hubContext)
         {
             _commentService = commentService;
             _logger = logger;
             _createCommentValidator = createCommentValidator;
             _getCommentsValidator = getCommentsValidator;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -46,6 +50,7 @@ namespace Comments.API.Controllers
             try
             {
                 var result = await _commentService.GetCommentsAsync(request);
+      
                 return Ok(ApiResponse<PagedResponse<CommentResponse>>.SuccessResponse(result));
             }
             catch (Exception ex)
@@ -102,7 +107,7 @@ namespace Comments.API.Controllers
                 var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
 
                 var comment = await _commentService.CreateCommentAsync(request, ipAddress, userAgent);
-
+                await _hubContext.Clients.All.SendAsync("CommentAdded", comment);
                 return CreatedAtAction(nameof(GetComment), new { id = comment.Id },
                     ApiResponse<CommentResponse>.SuccessResponse(comment, "Comment created successfully"));
             }
@@ -149,7 +154,7 @@ namespace Comments.API.Controllers
                 {
                     return NotFound(ApiResponse<object>.ErrorResponse("Comment not found"));
                 }
-
+           
                 return Ok(ApiResponse<object>.SuccessResponse(null, "Comment deleted successfully"));
             }
             catch (InvalidOperationException ex)
@@ -166,4 +171,3 @@ namespace Comments.API.Controllers
         }
     }
 }
-

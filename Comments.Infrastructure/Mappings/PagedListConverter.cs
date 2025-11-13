@@ -2,20 +2,21 @@
 using Comments.Core.DTOs.Responses;
 using Comments.Core.Specifications;
 
-namespace Comments.Infrastructure.Mappings;
-
-public class PagedListConverter<TSource, TDestination> : ITypeConverter<PagedList<TSource>, PagedResponse<TDestination>>
+namespace Comments.Infrastructure.Mappings
 {
-    public PagedResponse<TDestination> Convert(PagedList<TSource> source, PagedResponse<TDestination> destination, ResolutionContext context)
+    public class PagedListConverter<TSource, TDestination> : ITypeConverter<PagedList<TSource>, PagedResponse<TDestination>>
     {
-        var items = context.Mapper.Map<List<TDestination>>(source.Items);
-
-        return new PagedResponse<TDestination>
+        public PagedResponse<TDestination> Convert(PagedList<TSource> source, PagedResponse<TDestination> destination, ResolutionContext context)
         {
-            Items = items,
-            Page = source.Page,
-            PageSize = source.PageSize,
-            TotalCount = source.TotalCount
-        };
+            var items = context.Mapper.Map<List<TDestination>>(source.Items);
+
+            return new PagedResponse<TDestination>
+            {
+                Items = items,
+                Page = source.Page,
+                PageSize = source.PageSize,
+                TotalCount = source.TotalCount
+            };
+        }
     }
 }

@@ -1,11 +1,9 @@
-﻿using Comments.Application;
+﻿using AutoMapper;
 using Comments.Core.DTOs.Requests;
 using Comments.Core.DTOs.Responses;
-
+using Comments.Core.Entities;
 using Comments.Core.Specifications;
-using Nest;
-using AutoMapper;
-using Profile = AutoMapper.Profile;
+
 namespace Comments.Infrastructure.Mappings
 {
     public class MappingProfile : Profile

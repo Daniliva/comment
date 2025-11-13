@@ -1,12 +1,13 @@
-﻿namespace Comments.Core.DTOs.Responses;
-
-public class PagedResponse<T>
+﻿namespace Comments.Core.DTOs.Responses
 {
-    public List<T> Items { get; set; } = new();
-    public int Page { get; set; }
-    public int PageSize { get; set; }
-    public int TotalCount { get; set; }
-    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
-    public bool HasPrevious => Page > 1;
-    public bool HasNext => Page < TotalPages;
+    public class PagedResponse<T>
+    {
+        public List<T> Items { get; set; } = new();
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalCount { get; set; }
+        public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+        public bool HasPrevious => Page > 1;
+        public bool HasNext => Page < TotalPages;
+    }
 }

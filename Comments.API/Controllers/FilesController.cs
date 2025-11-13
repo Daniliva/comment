@@ -1,62 +1,64 @@
 using Comments.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Path = System.IO.Path;
 
-namespace Comments.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class FilesController : ControllerBase
+namespace Comments.API.Controllers
 {
-    private readonly IFileService _fileService;
-    private readonly ILogger<FilesController> _logger;
-
-    public FilesController(IFileService fileService, ILogger<FilesController> logger)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class FilesController : ControllerBase
     {
-        _fileService = fileService;
-        _logger = logger;
-    }
+        private readonly IFileService _fileService;
+        private readonly ILogger<FilesController> _logger;
 
-    [HttpGet("{*filePath}")]
-    public async Task<IActionResult> GetFile(string filePath)
-    {
-        try
+        public FilesController(IFileService fileService, ILogger<FilesController> logger)
         {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                return BadRequest("File path is required");
-            }
+            _fileService = fileService;
+            _logger = logger;
+        }
 
-            if (!_fileService.FileExists(filePath))
+        [HttpGet("{*filePath}")]
+        public async Task<IActionResult> GetFile(string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return BadRequest("File path is required");
+                }
+
+                if (!_fileService.FileExists(filePath))
+                {
+                    return NotFound();
+                }
+
+                var stream = await _fileService.GetFileAsync(filePath);
+                var contentType = GetContentType(filePath);
+
+                return File(stream, contentType, Path.GetFileName(filePath));
+            }
+            catch (FileNotFoundException)
             {
                 return NotFound();
             }
-
-            var stream = await _fileService.GetFileAsync(filePath);
-            var contentType = GetContentType(filePath);
-
-            return File(stream, contentType, Path.GetFileName(filePath));
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving file {FilePath}", filePath);
+                return StatusCode(500, "An error occurred while retrieving the file");
+            }
         }
-        catch (FileNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving file {FilePath}", filePath);
-            return StatusCode(500, "An error occurred while retrieving the file");
-        }
-    }
 
-    private string GetContentType(string filePath)
-    {
-        var extension = Path.GetExtension(filePath).ToLowerInvariant();
-        return extension switch
+        private string GetContentType(string filePath)
         {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".txt" => "text/plain",
-            _ => "application/octet-stream"
-        };
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+            return extension switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".txt" => "text/plain",
+                _ => "application/octet-stream"
+            };
+        }
     }
 }

@@ -1,18 +1,19 @@
 ﻿using System.Linq.Expressions;
 
-namespace Comments.Core.Interfaces;
-
-public interface IRepository<T> where T : class
+namespace Comments.Core.Interfaces
 {
-    Task<T?> GetByIdAsync(int id);
-    Task<IEnumerable<T>> GetAllAsync();
-    Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
-    Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
-    Task AddAsync(T entity);
-    void Update(T entity);
-    void Remove(T entity);
-    Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
-    Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
-    IQueryable<T> Query();
-    Task SaveChangesAsync();
+    public interface IRepository<T> where T : class
+    {
+        Task<T?> GetByIdAsync(int id);
+        Task<IEnumerable<T>> GetAllAsync();
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
+        Task AddAsync(T entity);
+        void Update(T entity);
+        void Remove(T entity);
+        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
+        Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
+        IQueryable<T> Query();
+        Task SaveChangesAsync();
+    }
 }
